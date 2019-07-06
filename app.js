@@ -45,6 +45,18 @@ const ItemCtrl = (function() {
 
             return newItem;
         },
+        getItemById: function(id) {
+            let found = null;
+            data.items.forEach(item => {
+                if (item.id === id) {
+                    found = item;
+                }
+            });
+            return found;
+        },
+        setCurrentItem: function(item) {
+            data.currentItem = item;
+        },
         getTotalCalories: function() {
             let total = 0;
 
@@ -140,7 +152,7 @@ const UICtrl = (function() {
             document.querySelector(UISelectors.deleteBtn).style.display =
                 'none';
             document.querySelector(UISelectors.backBtn).style.display = 'none';
-            document.querySelector(UISelectors.addBtn).style.display = 'block';
+            document.querySelector(UISelectors.addBtn).style.display = 'inline';
         },
         getSelectors: function() {
             return UISelectors;
@@ -159,6 +171,11 @@ const App = (function(ItemCtrl, UICtrl) {
         document
             .querySelector(UISelectors.addBtn)
             .addEventListener('click', itemAddSubmit);
+
+        // Edit icon click event - use event delegation - target itemList
+        document
+            .querySelector(UISelectors.itemList)
+            .addEventListener('click', itemUpdateSubmit);
     };
 
     // Add item submit
@@ -187,9 +204,28 @@ const App = (function(ItemCtrl, UICtrl) {
         e.preventDefault();
     };
 
+    // update item submit
+    const itemUpdateSubmit = function(e) {
+        if (e.target.classList.contains('edit-item')) {
+            // get list item id
+            const listId = e.target.parentNode.parentNode.id;
+            // split id field
+            const listIdArr = listId.split('-');
+            const id = parseInt(listIdArr[1]);
+            // get item
+            const itemToEdit = ItemCtrl.getItemById(id);
+
+            // set current item
+            ItemCtrl.setCurrentItem(itemToEdit);
+        }
+        e.preventDefault();
+    };
+
     // Public methods
     return {
         init: function() {
+            // clear edit state - set initial state
+            UICtrl.clearEditState();
             // Fetch items from data structure
             const items = ItemCtrl.getItems();
 
